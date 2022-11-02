@@ -1,14 +1,19 @@
-provider "aws" {
-  region = local.region
-}
+variable "vpc_name" {}
+variable "backend_region" {}
+variable "owner" {}
+variable "environment" {}
 
 locals {
-  name   = "complete-mysql"
-  region = "eu-west-1"
+  name   = var.vpc_name
+  region = var.backend_region
   tags = {
-    Owner       = "user"
-    Environment = "dev"
+    Owner       = var.owner
+    Environment = var.environment
   }
+}
+
+provider "aws" {
+  region = local.region
 }
 
 ################################################################################

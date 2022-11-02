@@ -1,14 +1,32 @@
-provider "aws" {
-  region = local.region
-}
+#################
+# VPC variables
+#################
+
+variable "vpc_name" {}
+variable "backend_region" {}
+variable "owner" {}
+variable "environment" {}
+variable "vpc_cidr" {}
+variable "vpc_azs"  {}
+variable "vpc_public_subnets" {}
+variable "vpc_private_subnets" {}
+variable "vpc_database_subnets" {}
+
+#################
+# SG variables
+#################
 
 locals {
-  name   = "complete-mysql"
-  region = "eu-west-1"
+  name   = var.vpc_name
+  region = var.backend_region
   tags = {
-    Owner       = "user"
-    Environment = "dev"
+    Owner       = var.owner
+    Environment = var.environment
   }
+}
+
+provider "aws" {
+  region = local.region
 }
 
 ################################################################################
@@ -20,12 +38,12 @@ module "vpc" {
   version = "~> 3.0"
 
   name = local.name
-  cidr = "10.99.0.0/18"
+  cidr = var.vpc_cidr
 
-  azs              = ["${local.region}a", "${local.region}b", "${local.region}c"]
-  public_subnets   = ["10.99.0.0/24", "10.99.1.0/24", "10.99.2.0/24"]
-  private_subnets  = ["10.99.3.0/24", "10.99.4.0/24", "10.99.5.0/24"]
-  database_subnets = ["10.99.7.0/24", "10.99.8.0/24", "10.99.9.0/24"]
+  azs              = var.vpc_azs
+  public_subnets   = var.vpc_public_subnets
+  private_subnets  = var.vpc_private_subnets
+  database_subnets = var.vpc_database_subnets
 
   create_database_subnet_group = true
 
