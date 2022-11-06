@@ -11,7 +11,7 @@ pipeline {
     stages {
         stage('Terraform Init'){
             steps{
-                dir(postgres/dev){
+                dir('postgres/dev'){
                     sh 'terraform init'
                 }
                 
@@ -19,10 +19,9 @@ pipeline {
         }
         stage('Terraform Apply'){
             steps{
-                dir(postgres/dev){
+                dir('postgres/dev'){
                     sh 'terraform apply'
                 }
-                
             }
         }
     }
