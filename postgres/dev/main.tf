@@ -16,6 +16,31 @@ variable "vpc_database_subnets" {}
 # SG variables
 #################
 
+variable "sg_ingress_port" {}
+variable "sg_ingress_protocol" {}
+
+#################
+# RDS variables
+#################
+
+variable "db_identifier" {}
+variable "db_engine" {}
+variable "db_engine_version" {}
+variable "db_family" {}
+variable "db_major_engine_version" {}
+variable "db_instance_class" {}
+variable "db_allocated_storage" {}
+variable "db_max_allocated_storage" {}
+variable "db_name" {}
+variable "db_username" {}
+variable "db_port" {}
+variable "db_maintenance_window" {}
+variable "db_backup_window" {}
+variable "db_monitoring_interval" {}
+variable "db_monitoring_role_name" {}
+variable "db_create_monitoring_role" {}
+
+
 locals {
   name   = var.vpc_name
   region = var.backend_region
@@ -61,9 +86,9 @@ module "security_group" {
   # ingress
   ingress_with_cidr_blocks = [
     {
-      from_port   = 3306
-      to_port     = 3306
-      protocol    = "tcp"
+      from_port   = var.sg_ingress_port
+      to_port     = var.sg_ingress_port
+      protocol    = var.sg_ingress_protocol
       description = "MySQL access from within VPC"
       cidr_blocks = module.vpc.vpc_cidr_block
     },
@@ -79,33 +104,31 @@ module "security_group" {
 module "db" {
   source  = "terraform-aws-modules/rds/aws"
 
-  identifier = "demodb"
+  identifier = var.db_identifier
 
-  engine               = "mysql"
-  engine_version       = "8.0.27"
-  family               = "mysql8.0" # DB parameter group
-  major_engine_version = "8.0"      # DB option group
-  instance_class       = "db.t4g.large"
+  engine               = var.db_engine
+  engine_version       = var.db_engine_version
+  family               = var.db_family
+  major_engine_version = var.db_major_engine_version
+  instance_class       = var.db_instance_class
 
-  allocated_storage     = 20
-  max_allocated_storage = 100
+  allocated_storage     = var.db_allocated_storage
+  max_allocated_storage = var.db_max_allocated_storage
 
-  db_name  = "completeMysql"
-  username = "complete_mysql"
-  port     = "3306"
+  db_name  = var.db_name
+  username = var.db_username
+  port     = var.db_port
 
   iam_database_authentication_enabled = true
 
   vpc_security_group_ids = [module.security_group.security_group_id]
 
-  maintenance_window = "Mon:00:00-Mon:03:00"
-  backup_window      = "03:00-06:00"
+  maintenance_window = var.db_maintenance_window
+  backup_window      = var.db_backup_window
 
-  # Enhanced Monitoring - see example for details on how to create the role
-  # by yourself, in case you don't want to create it automatically
-  monitoring_interval = "30"
-  monitoring_role_name = "MyRDSMonitoringRole"
-  create_monitoring_role = true
+  monitoring_interval = var.db_monitoring_interval
+  monitoring_role_name = var.db_monitoring_role_name
+  create_monitoring_role = var.db_create_monitoring_role
 
   tags = {
     Owner       = "user"
